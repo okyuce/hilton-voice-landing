@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sesli Asistan - DoubleTree by Hilton Van</title>
-    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi-web.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         * {
@@ -30,7 +29,6 @@
             width: 100%;
         }
 
-        /* Header - Hotel Branding */
         .hotel-header {
             margin-bottom: 40px;
         }
@@ -59,7 +57,6 @@
             letter-spacing: 3px;
         }
 
-        /* Room Card */
         .room-card {
             background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
             border: 1px solid rgba(201, 162, 39, 0.3);
@@ -92,7 +89,6 @@
             font-weight: 400;
         }
 
-        /* Call Button */
         .call-section {
             margin-bottom: 30px;
         }
@@ -148,19 +144,10 @@
             font-weight: 300;
         }
 
-        .status.connecting {
-            color: #c9a227;
-        }
+        .status.connecting { color: #c9a227; }
+        .status.active { color: #4CAF50; }
+        .status.error { color: #e74c3c; }
 
-        .status.active {
-            color: #4CAF50;
-        }
-
-        .status.error {
-            color: #e74c3c;
-        }
-
-        /* Info Section */
         .info-section {
             background: rgba(255,255,255,0.03);
             border-radius: 12px;
@@ -181,7 +168,6 @@
             line-height: 1.7;
         }
 
-        /* Services */
         .services {
             display: flex;
             justify-content: center;
@@ -190,15 +176,8 @@
             flex-wrap: wrap;
         }
 
-        .service-item {
-            text-align: center;
-        }
-
-        .service-icon {
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-
+        .service-item { text-align: center; }
+        .service-icon { font-size: 24px; margin-bottom: 6px; }
         .service-label {
             font-size: 10px;
             color: #888;
@@ -206,14 +185,12 @@
             text-transform: uppercase;
         }
 
-        /* Languages */
         .languages {
             font-size: 10px;
             color: #555;
             letter-spacing: 3px;
         }
 
-        /* Volume indicator */
         .volume-indicator {
             display: flex;
             justify-content: center;
@@ -230,11 +207,8 @@
             transition: height 0.1s ease;
         }
 
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
 
-        /* Loading */
         .loading-spinner {
             width: 35px;
             height: 35px;
@@ -245,11 +219,8 @@
             margin: 0 auto 15px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Error */
         .error-container {
             background: rgba(231, 76, 60, 0.1);
             border: 1px solid rgba(231, 76, 60, 0.3);
@@ -269,7 +240,6 @@
             font-size: 12px;
         }
 
-        /* Footer */
         .footer {
             margin-top: 30px;
             padding-top: 20px;
@@ -285,30 +255,25 @@
 </head>
 <body>
     <div class="container">
-        <!-- Hotel Header -->
         <div class="hotel-header">
             <h1 class="hotel-brand">DoubleTree</h1>
             <p class="hotel-sub">by Hilton</p>
             <p class="hotel-location">VAN</p>
         </div>
 
-        <!-- Room Card -->
         <div class="room-card">
             <p class="room-label">Oda</p>
             <h2 class="room-number" id="roomNumber">---</h2>
             <p class="welcome-text">Hosgeldiniz</p>
         </div>
 
-        <!-- Loading -->
         <div id="loadingSpinner" class="loading-spinner"></div>
 
-        <!-- Error -->
         <div id="errorContainer" class="error-container hidden">
             <h3>Baglanti Hatasi</h3>
             <p id="errorMessage"></p>
         </div>
 
-        <!-- Call Section -->
         <div class="call-section">
             <button class="call-button hidden" id="callButton" disabled>
                 <span id="callIcon">&#128222;</span>
@@ -324,7 +289,6 @@
             </div>
         </div>
 
-        <!-- Info -->
         <div class="info-section">
             <p class="info-title">7/24 Sesli Asistan</p>
             <p class="info-text">
@@ -333,7 +297,6 @@
             </p>
         </div>
 
-        <!-- Services -->
         <div class="services">
             <div class="service-item">
                 <div class="service-icon">🍽️</div>
@@ -353,12 +316,8 @@
             </div>
         </div>
 
-        <!-- Languages -->
-        <div class="languages">
-            TR | EN | DE | AR | FA
-        </div>
+        <div class="languages">TR | EN | DE | AR | FA</div>
 
-        <!-- Footer -->
         <div class="footer">
             <p class="footer-text">POWERED BY VOICEDESK.AI</p>
         </div>
@@ -370,6 +329,9 @@
         const assistantId = urlParams.get('assistant_id');
         const tenantSlug = urlParams.get('tenant_slug') || 'hiltonvan';
         const roomNumber = urlParams.get('room_number') || '---';
+
+        // Hardcoded VAPI public key (from VAPI dashboard)
+        const VAPI_PUBLIC_KEY = '77b7ab3c-8e81-498a-93eb-148a3a406b88';
 
         // DOM elements
         const roomNumberEl = document.getElementById('roomNumber');
@@ -386,82 +348,21 @@
 
         let vapi = null;
         let isCallActive = false;
-        let vapiPublicKey = null;
 
-        // Initialize VAPI
-        async function initVapi() {
-            try {
-                // Check if assistant_id is provided
-                if (!assistantId) {
-                    throw new Error('Assistant ID eksik. Lutfen gecerli bir QR kod kullanin.');
-                }
-
-                // Try to get public key from API, fallback to hardcoded
-                try {
-                    const apiUrl = 'https://criselda-grimmest-biannually.ngrok-free.dev';
-                    const response = await fetch(`${apiUrl}/api/v1/widget/${tenantSlug}/config`, {
-                        headers: { 'ngrok-skip-browser-warning': 'true' }
-                    });
-                    if (response.ok) {
-                        const config = await response.json();
-                        vapiPublicKey = config.vapi_public_key;
-                    }
-                } catch (e) {
-                    console.log('Could not fetch config, using provided key');
-                }
-
-                // Fallback to URL param or default
-                if (!vapiPublicKey) {
-                    vapiPublicKey = urlParams.get('public_key') || '77b7ab3c-8e81-498a-93eb-148a3a406b88';
-                }
-
-                // Initialize VAPI with public key
-                vapi = new Vapi(vapiPublicKey);
-
-                // Set up event listeners
-                vapi.on('call-start', () => {
-                    console.log('Call started');
-                    isCallActive = true;
-                    updateUI('active');
-                });
-
-                vapi.on('call-end', () => {
-                    console.log('Call ended');
-                    isCallActive = false;
-                    updateUI('idle');
-                });
-
-                vapi.on('speech-start', () => {
-                    volumeIndicator.classList.remove('hidden');
-                });
-
-                vapi.on('speech-end', () => {
-                    volumeIndicator.classList.add('hidden');
-                });
-
-                vapi.on('error', (error) => {
-                    console.error('VAPI Error:', error);
-                    showError('Baglanti hatasi. Lutfen tekrar deneyin.');
-                    isCallActive = false;
-                    updateUI('error');
-                });
-
-                vapi.on('volume-level', (volume) => {
-                    updateVolumeBars(volume);
-                });
-
-                // Hide loading, show button
-                loadingSpinner.classList.add('hidden');
-                callButton.classList.remove('hidden');
-                updateUI('idle');
-                statusEl.textContent = 'Aramak icin dokunun';
-                callButton.disabled = false;
-
-            } catch (error) {
-                console.error('Failed to initialize VAPI:', error);
-                loadingSpinner.classList.add('hidden');
-                showError(error.message || 'Sesli asistan baslatilamadi. Sayfayi yenileyin.');
-            }
+        // Load VAPI SDK dynamically
+        function loadVapiSDK() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.js';
+                script.onload = () => {
+                    console.log('VAPI SDK loaded');
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject(new Error('VAPI SDK yuklenemedi'));
+                };
+                document.head.appendChild(script);
+            });
         }
 
         function showError(message) {
@@ -469,6 +370,7 @@
             errorMessage.textContent = message;
             statusEl.textContent = 'Hata';
             statusEl.className = 'status error';
+            loadingSpinner.classList.add('hidden');
         }
 
         function updateUI(state) {
@@ -511,6 +413,67 @@
             });
         }
 
+        async function initVapi() {
+            try {
+                if (!assistantId) {
+                    throw new Error('Assistant ID eksik. Lutfen gecerli bir QR kod kullanin.');
+                }
+
+                // Load VAPI SDK
+                statusEl.textContent = 'SDK yukleniyor...';
+                await loadVapiSDK();
+
+                // Check if Vapi is available
+                if (typeof Vapi === 'undefined') {
+                    throw new Error('VAPI SDK yuklenemedi. Sayfayi yenileyin.');
+                }
+
+                // Initialize VAPI
+                vapi = new Vapi(VAPI_PUBLIC_KEY);
+
+                vapi.on('call-start', () => {
+                    console.log('Call started');
+                    isCallActive = true;
+                    updateUI('active');
+                });
+
+                vapi.on('call-end', () => {
+                    console.log('Call ended');
+                    isCallActive = false;
+                    updateUI('idle');
+                });
+
+                vapi.on('speech-start', () => {
+                    volumeIndicator.classList.remove('hidden');
+                });
+
+                vapi.on('speech-end', () => {
+                    volumeIndicator.classList.add('hidden');
+                });
+
+                vapi.on('error', (error) => {
+                    console.error('VAPI Error:', error);
+                    showError('Baglanti hatasi. Lutfen tekrar deneyin.');
+                    isCallActive = false;
+                    updateUI('error');
+                });
+
+                vapi.on('volume-level', (volume) => {
+                    updateVolumeBars(volume);
+                });
+
+                // Ready
+                loadingSpinner.classList.add('hidden');
+                callButton.classList.remove('hidden');
+                callButton.disabled = false;
+                updateUI('idle');
+
+            } catch (error) {
+                console.error('Init error:', error);
+                showError(error.message);
+            }
+        }
+
         async function toggleCall() {
             if (!vapi) {
                 showError('Sesli asistan hazir degil. Sayfayi yenileyin.');
@@ -528,7 +491,6 @@
             } else {
                 updateUI('connecting');
                 try {
-                    // Start call with room_number variable
                     await vapi.start(assistantId, {
                         assistantOverrides: {
                             variableValues: {
@@ -545,10 +507,7 @@
             }
         }
 
-        // Event listeners
         callButton.addEventListener('click', toggleCall);
-
-        // Initialize on page load
         document.addEventListener('DOMContentLoaded', initVapi);
     </script>
 </body>
